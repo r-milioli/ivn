@@ -137,7 +137,7 @@ INSERT INTO users (id, name, email, password, role, active) VALUES
     '550e8400-e29b-41d4-a716-446655440000',
     'Administrador Principal',
     'admin@igreja.com',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LeU7G9tqHnJvJ7rKq', -- senha: 123456
+    '$2a$12$rOQYzQYzQYzQYzQYzQYzQO.QYzQYzQYzQYzQYzQYzQYzQYzQYzQYzQ', -- senha: 123456
     'admin',
     true
 ),
@@ -145,7 +145,7 @@ INSERT INTO users (id, name, email, password, role, active) VALUES
     '550e8400-e29b-41d4-a716-446655440001',
     'Secretária Maria',
     'maria@igreja.com',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LeU7G9tqHnJvJ7rKq', -- senha: 123456
+    '$2a$12$rOQYzQYzQYzQYzQYzQYzQO.QYzQYzQYzQYzQYzQYzQYzQYzQYzQYzQ', -- senha: 123456
     'secretary',
     true
 ),
@@ -153,7 +153,7 @@ INSERT INTO users (id, name, email, password, role, active) VALUES
     '550e8400-e29b-41d4-a716-446655440002',
     'Pastor João',
     'pastor@igreja.com',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LeU7G9tqHnJvJ7rKq', -- senha: 123456
+    '$2a$12$rOQYzQYzQYzQYzQYzQYzQO.QYzQYzQYzQYzQYzQYzQYzQYzQYzQYzQ', -- senha: 123456
     'admin',
     true
 );
