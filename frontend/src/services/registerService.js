@@ -1,4 +1,5 @@
 import api from './api'
+import accessRequestService from './accessRequestService'
 
 /**
  * Serviço para operações de cadastro e solicitação de acesso
@@ -11,11 +12,11 @@ class RegisterService {
    */
   async requestAccess(userData) {
     try {
-      const response = await api.post('/access-requests', userData)
+      const response = await accessRequestService.createRequest(userData)
       return {
         success: true,
         message: 'Solicitação enviada com sucesso! Aguarde aprovação do administrador.',
-        data: response.data.data
+        data: response.data
       }
     } catch (error) {
       throw error
@@ -29,10 +30,10 @@ class RegisterService {
    */
   async checkEmailAvailability(email) {
     try {
-      const response = await api.get(`/access-requests/check-email/${email}`)
+      const response = await accessRequestService.checkEmailRequest(email)
       return {
-        available: !response.data.data.hasPendingRequest,
-        message: response.data.data.hasPendingRequest 
+        available: !response.data.hasPendingRequest,
+        message: response.data.hasPendingRequest 
           ? 'Já existe uma solicitação pendente com este email' 
           : 'Email disponível'
       }

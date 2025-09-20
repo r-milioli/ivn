@@ -15,6 +15,7 @@ import Dashboard from './pages/dashboard/Dashboard'
 
 // Páginas administrativas
 import Users from './pages/admin/Users'
+import AccessRequests from './pages/admin/AccessRequests'
 
 // Componentes
 import ProtectedRoute from './components/auth/ProtectedRoute'
@@ -104,22 +105,48 @@ function App() {
         <Route path="reports/*" element={<div className="p-6"><h1 className="text-2xl font-bold">Relatórios</h1><p>Em desenvolvimento...</p></div>} />
         
         {/* Rotas administrativas (apenas admin) */}
+        
+        {/* Gestão de usuários */}
         <Route 
-          path="admin/*" 
+          path="admin/users" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Users />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="admin/users/:id" 
           element={
             <ProtectedRoute requiredRole="admin">
               <div className="p-6">
-                <h1 className="text-2xl font-bold">Administração</h1>
-                <p>Área administrativa - Em desenvolvimento...</p>
+                <h1 className="text-2xl font-bold">Detalhes do Usuário</h1>
+                <p>Em desenvolvimento...</p>
               </div>
             </ProtectedRoute>
           } 
-        >
-          {/* Gestão de usuários */}
-          <Route path="users" element={<Users />} />
-          <Route path="users/:id" element={<div className="p-6"><h1 className="text-2xl font-bold">Detalhes do Usuário</h1><p>Em desenvolvimento...</p></div>} />
-          <Route path="users/:id/edit" element={<div className="p-6"><h1 className="text-2xl font-bold">Editar Usuário</h1><p>Em desenvolvimento...</p></div>} />
-        </Route>
+        />
+        <Route 
+          path="admin/users/:id/edit" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <div className="p-6">
+                <h1 className="text-2xl font-bold">Editar Usuário</h1>
+                <p>Em desenvolvimento...</p>
+              </div>
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Gestão de solicitações de acesso */}
+        <Route 
+          path="admin/access-requests" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AccessRequests />
+            </ProtectedRoute>
+          } 
+        />
       </Route>
 
       {/* Páginas de erro */}

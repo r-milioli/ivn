@@ -12,7 +12,8 @@ import {
   TrendingUp,
   Bell,
   HelpCircle,
-  Shield
+  Shield,
+  UserCheck
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useApp } from '../../context/AppContext'
@@ -95,6 +96,12 @@ const Sidebar = () => {
       href: '/admin/users',
       icon: Shield,
       description: 'Gestão de usuários'
+    },
+    {
+      name: 'Solicitações',
+      href: '/admin/access-requests',
+      icon: UserCheck,
+      description: 'Aprovação de novos usuários'
     },
     {
       name: 'Configurações',

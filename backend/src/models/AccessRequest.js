@@ -109,13 +109,8 @@ const AccessRequest = sequelize.define('AccessRequest', {
   tableName: 'access_requests',
   paranoid: true, // Soft delete
   hooks: {
-    // Hash da senha antes de salvar
-    beforeCreate: async (request) => {
-      if (request.password) {
-        const { hashPassword } = require('../config/auth');
-        request.password = await hashPassword(request.password);
-      }
-    }
+    // Não hashear a senha aqui - será hasheada quando o usuário for criado
+    // A senha fica em texto plano temporariamente para ser transferida para o User
   },
   scopes: {
     // Scope para retornar solicitações pendentes

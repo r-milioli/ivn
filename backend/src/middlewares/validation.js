@@ -325,6 +325,13 @@ const validateQueryParams = (req, res, next) => {
     search: Joi.string()
       .allow('')
       .optional(),
+    status: Joi.string()
+      .allow('')
+      .valid('pending', 'approved', 'rejected')
+      .optional()
+      .messages({
+        'any.only': 'Status deve ser pending, approved ou rejected'
+      }),
     sortBy: Joi.string()
       .allow('')
       .optional(),

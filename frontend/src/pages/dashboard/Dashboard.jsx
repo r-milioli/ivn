@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   DollarSign, 
   Users, 
@@ -9,10 +9,40 @@ import {
   Download,
   ArrowUpRight,
   ArrowDownRight,
-  UserPlus
+  UserPlus,
+  UserCheck,
+  Clock
 } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
+import { useApp } from '../../context/AppContext'
+import accessRequestService from '../../services/accessRequestService'
 
 const Dashboard = () => {
+  const { isAdmin } = useAuth()
+  const { notifyError } = useApp()
+  const [accessRequestStats, setAccessRequestStats] = useState({})
+  const [loading, setLoading] = useState(false)
+
+  // Carregar estatísticas de solicitações de acesso (apenas para admins)
+  useEffect(() => {
+    if (isAdmin()) {
+      loadAccessRequestStats()
+    }
+  }, [isAdmin])
+
+  const loadAccessRequestStats = async () => {
+    try {
+      setLoading(true)
+      const response = await accessRequestService.getStatistics()
+      setAccessRequestStats(response.data)
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas de solicitações:', error)
+      notifyError('Erro ao carregar estatísticas de solicitações')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Dados mockados para demonstração
   const statsData = {
     totalRevenue: {
@@ -214,16 +244,51 @@ const Dashboard = () => {
           icon={TrendingUp}
           color="bg-warning-500"
         />
-        <StatCard
-          title="Crescimento Mensal"
-          value={statsData.monthlyGrowth.value}
-          change={statsData.monthlyGrowth.change}
-          changeType={statsData.monthlyGrowth.changeType}
-          period={statsData.monthlyGrowth.period}
-          icon={TrendingUp}
-          color="bg-secondary-500"
-        />
+        {isAdmin() && (
+          <StatCard
+            title="Solicitações Pendentes"
+            value={accessRequestStats.pending || 0}
+            change={`${accessRequestStats.lastMonth || 0} este mês`}
+            changeType="neutral"
+            period="aguardando aprovação"
+            icon={Clock}
+            color="bg-orange-500"
+          />
+        )}
       </div>
+
+      {/* Cards adicionais para admins */}
+      {isAdmin() && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <StatCard
+            title="Total de Solicitações"
+            value={accessRequestStats.total || 0}
+            change={`${accessRequestStats.approved || 0} aprovadas`}
+            changeType="positive"
+            period="todas as solicitações"
+            icon={UserCheck}
+            color="bg-blue-500"
+          />
+          <StatCard
+            title="Solicitações Aprovadas"
+            value={accessRequestStats.approved || 0}
+            change={`${accessRequestStats.rejected || 0} rejeitadas`}
+            changeType="positive"
+            period="usuários criados"
+            icon={UserPlus}
+            color="bg-green-500"
+          />
+          <StatCard
+            title="Solicitações Rejeitadas"
+            value={accessRequestStats.rejected || 0}
+            change={`${Math.round(((accessRequestStats.rejected || 0) / (accessRequestStats.total || 1)) * 100)}%`}
+            changeType="negative"
+            period="do total"
+            icon={TrendingDown}
+            color="bg-red-500"
+          />
+        </div>
+      )}
 
       {/* Gráficos e tabelas */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -336,7 +401,7 @@ const Dashboard = () => {
           <p className="text-sm text-gray-600">Acesso rápido às funcionalidades principais</p>
         </div>
         <div className="card-body">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className={`grid ${isAdmin() ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-2 md:grid-cols-4'} gap-4`}>
             <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-center">
               <UserPlus className="h-8 w-8 text-primary-600 mx-auto mb-2" />
               <p className="text-sm font-medium text-gray-900">Novo Membro</p>
@@ -356,6 +421,16 @@ const Dashboard = () => {
               <FileText className="h-8 w-8 text-secondary-600 mx-auto mb-2" />
               <p className="text-sm font-medium text-gray-900">Relatório</p>
             </button>
+
+            {isAdmin() && (
+              <button 
+                onClick={() => window.location.href = '/admin/access-requests'}
+                className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-center"
+              >
+                <UserCheck className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+                <p className="text-sm font-medium text-gray-900">Solicitações</p>
+              </button>
+            )}
           </div>
         </div>
       </div>

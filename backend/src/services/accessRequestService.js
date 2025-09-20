@@ -1,5 +1,7 @@
 const { AccessRequest, User } = require('../models');
 const { authLog } = require('../utils/logger');
+const emailService = require('./emailService');
+const { sequelize } = require('../config/database');
 
 /**
  * Service para operações de solicitações de acesso
@@ -44,6 +46,16 @@ const createAccessRequest = async (requestData, ipAddress, userAgent) => {
       userAgent
     });
 
+    // Enviar notificação para administradores
+    try {
+      await emailService.sendNewRequestNotification(newRequest);
+    } catch (emailError) {
+      authLog('error', 'Erro ao enviar notificação de nova solicitação', {
+        requestId: newRequest.id,
+        error: emailError.message
+      });
+    }
+
     const result = newRequest.toJSON();
     return result;
   } catch (error) {
@@ -66,42 +78,65 @@ const listAccessRequests = async (options = {}) => {
   try {
     const { page = 1, limit = 10, status = '', search = '' } = options;
     
-    const whereClause = {};
+    // Construir where clause de forma mais simples
+    let whereConditions = [];
+    let replacements = {};
     
     // Filtro por status
     if (status) {
-      whereClause.status = status;
+      whereConditions.push('status = :status');
+      replacements.status = status;
     }
     
     // Filtro por busca
     if (search) {
-      whereClause[sequelize.Op.or] = [
-        { name: { [sequelize.Op.iLike]: `%${search}%` } },
-        { email: { [sequelize.Op.iLike]: `%${search}%` } }
-      ];
+      whereConditions.push('(name ILIKE :search OR email ILIKE :search)');
+      replacements.search = `%${search}%`;
     }
 
-    const { count, rows } = await AccessRequest.findAndCountAll({
-      where: whereClause,
-      include: [
-        {
-          model: User,
-          as: 'approver',
-          attributes: ['id', 'name', 'email']
-        }
-      ],
-      order: [['createdAt', 'DESC']],
-      limit: parseInt(limit),
-      offset: (page - 1) * limit
+    // Construir query SQL direta para evitar problemas com Sequelize
+    let whereClause = whereConditions.length > 0 ? 
+      'WHERE ' + whereConditions.join(' AND ') : '';
+    
+    const countQuery = `
+      SELECT COUNT(*) as count 
+      FROM access_requests 
+      ${whereClause}
+    `;
+    
+    const dataQuery = `
+      SELECT * 
+      FROM access_requests 
+      ${whereClause}
+      ORDER BY created_at DESC 
+      LIMIT :limit OFFSET :offset
+    `;
+
+    // Executar contagem
+    const [countResult] = await sequelize.query(countQuery, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT
+    });
+    
+    const totalCount = parseInt(countResult.count);
+    
+    // Executar consulta de dados
+    const requests = await sequelize.query(dataQuery, {
+      replacements: {
+        ...replacements,
+        limit: parseInt(limit),
+        offset: (parseInt(page) - 1) * parseInt(limit)
+      },
+      type: sequelize.QueryTypes.SELECT
     });
 
     return {
-      requests: rows,
+      requests,
       pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(count / limit),
-        totalItems: count,
-        itemsPerPage: limit
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalCount / parseInt(limit)),
+        totalItems: totalCount,
+        itemsPerPage: parseInt(limit)
       }
     };
   } catch (error) {
@@ -190,6 +225,18 @@ const approveAccessRequest = async (requestId, approver) => {
       approvedByEmail: approver.email
     });
 
+    // Enviar notificação de aprovação para o usuário
+    try {
+      await emailService.sendApprovalNotification(request);
+      await emailService.sendWelcomeEmail(newUser);
+    } catch (emailError) {
+      authLog('error', 'Erro ao enviar notificações de aprovação', {
+        requestId: request.id,
+        userId: newUser.id,
+        error: emailError.message
+      });
+    }
+
     return newUser.toJSON();
   } catch (error) {
     authLog('error', 'Erro ao aprovar solicitação de acesso', {
@@ -236,6 +283,19 @@ const rejectAccessRequest = async (requestId, reason, rejector) => {
       rejectedBy: rejector.id,
       rejectedByEmail: rejector.email
     });
+
+    // Enviar notificação de rejeição para o usuário
+    try {
+      await emailService.sendRejectionNotification({
+        ...request.toJSON(),
+        rejectionReason: reason
+      });
+    } catch (emailError) {
+      authLog('error', 'Erro ao enviar notificação de rejeição', {
+        requestId: request.id,
+        error: emailError.message
+      });
+    }
 
     return true;
   } catch (error) {
