@@ -7,6 +7,60 @@ const { Request, Response } = require('express');
  */
 
 /**
+ * Validação para solicitação de acesso
+ */
+const validateAccessRequest = (req, res, next) => {
+  
+  const schema = Joi.object({
+    name: Joi.string()
+      .min(2)
+      .max(100)
+      .required()
+      .messages({
+        'string.min': 'Nome deve ter pelo menos 2 caracteres',
+        'string.max': 'Nome deve ter no máximo 100 caracteres',
+        'any.required': 'Nome é obrigatório'
+      }),
+    email: Joi.string()
+      .email()
+      .required()
+      .messages({
+        'string.email': 'Email deve ter um formato válido',
+        'any.required': 'Email é obrigatório'
+      }),
+    password: Joi.string()
+      .min(6)
+      .max(50)
+      .required()
+      .messages({
+        'string.min': 'Senha deve ter pelo menos 6 caracteres',
+        'string.max': 'Senha deve ter no máximo 50 caracteres',
+        'any.required': 'Senha é obrigatória'
+      }),
+    role: Joi.string()
+      .valid('admin', 'secretary')
+      .default('secretary')
+      .messages({
+        'any.only': 'Função deve ser admin ou secretary'
+      })
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: 'Dados inválidos',
+      details: error.details.map(detail => ({
+        field: detail.path[0],
+        message: detail.message
+      }))
+    });
+  }
+
+  next();
+};
+
+/**
  * Validação para registro de usuário
  */
 const validateUserRegistration = (req, res, next) => {
@@ -363,6 +417,7 @@ const validateUUID = (paramName) => {
 };
 
 module.exports = {
+  validateAccessRequest,
   validateUserRegistration,
   validateUserLogin,
   validateMember,

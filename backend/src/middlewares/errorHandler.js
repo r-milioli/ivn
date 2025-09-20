@@ -1,4 +1,4 @@
-const logger = require('../utils/logger');
+const { logger } = require('../utils/logger');
 
 /**
  * Middleware global de tratamento de erros

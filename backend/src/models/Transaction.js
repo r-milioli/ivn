@@ -70,6 +70,7 @@ const Transaction = sequelize.define('Transaction', {
     type: DataTypes.ENUM('cash', 'transfer', 'check', 'pix', 'credit_card'),
     allowNull: false,
     defaultValue: 'cash',
+    field: 'payment_method', // Mapear para snake_case no banco
     validate: {
       isIn: {
         args: [['cash', 'transfer', 'check', 'pix', 'credit_card']],
@@ -81,6 +82,7 @@ const Transaction = sequelize.define('Transaction', {
   createdBy: {
     type: DataTypes.UUID,
     allowNull: false,
+    field: 'created_by', // Mapear para snake_case no banco
     references: {
       model: 'users',
       key: 'id'
@@ -90,6 +92,7 @@ const Transaction = sequelize.define('Transaction', {
   referenceNumber: {
     type: DataTypes.STRING(50),
     allowNull: true,
+    field: 'reference_number', // Mapear para snake_case no banco
     comment: 'Número de referência (nota fiscal, comprovante, etc.)'
   },
   tags: {
@@ -100,12 +103,14 @@ const Transaction = sequelize.define('Transaction', {
   // Campo para soft delete com motivo
   deletedReason: {
     type: DataTypes.TEXT,
-    allowNull: true
+    allowNull: true,
+    field: 'deleted_reason' // Mapear para snake_case no banco
   },
   // Campos para auditoria
   lastModifiedBy: {
     type: DataTypes.UUID,
     allowNull: true,
+    field: 'last_modified_by', // Mapear para snake_case no banco
     references: {
       model: 'users',
       key: 'id'
@@ -125,10 +130,10 @@ const Transaction = sequelize.define('Transaction', {
       fields: ['date']
     },
     {
-      fields: ['createdBy']
+      fields: ['created_by']
     },
     {
-      fields: ['paymentMethod']
+      fields: ['payment_method']
     }
   ],
   scopes: {

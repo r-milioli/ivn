@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { Eye, EyeOff, Church, Mail, Lock } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
@@ -179,6 +179,19 @@ const Login = () => {
               </div>
             </form>
           </div>
+        </div>
+
+        {/* Link para cadastro */}
+        <div className="text-center">
+          <p className="text-sm text-gray-600">
+            Não tem uma conta?{' '}
+            <Link
+              to="/register"
+              className="font-medium text-primary-600 hover:text-primary-500"
+            >
+              Solicite acesso aqui
+            </Link>
+          </p>
         </div>
 
         {/* Informações adicionais */}

@@ -1,6 +1,6 @@
 const { verifyToken, extractTokenFromHeader } = require('../config/auth');
 const { User } = require('../models');
-const logger = require('../utils/logger');
+const { logger } = require('../utils/logger');
 
 /**
  * Middleware de autenticação JWT

@@ -73,11 +73,13 @@ const User = sequelize.define('User', {
   },
   lastLogin: {
     type: DataTypes.DATE,
-    allowNull: true
+    allowNull: true,
+    field: 'last_login' // Mapear para snake_case no banco
   },
   refreshToken: {
     type: DataTypes.TEXT,
-    allowNull: true
+    allowNull: true,
+    field: 'refresh_token' // Mapear para snake_case no banco
   }
 }, {
   tableName: 'users',

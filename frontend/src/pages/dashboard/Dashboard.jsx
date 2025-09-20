@@ -8,7 +8,8 @@ import {
   FileText,
   Download,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  UserPlus
 } from 'lucide-react'
 
 const Dashboard = () => {

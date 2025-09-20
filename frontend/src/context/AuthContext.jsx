@@ -157,19 +157,24 @@ export const AuthProvider = ({ children }) => {
       
       const response = await authService.login(credentials)
       
+      // Verificar se a resposta tem a estrutura esperada
+      if (!response || !response.data || !response.data.tokens || !response.data.tokens.accessToken) {
+        throw new Error('Resposta de login inválida')
+      }
+      
       // Salvar tokens no localStorage
-      localStorage.setItem('token', response.tokens.accessToken)
-      localStorage.setItem('refreshToken', response.tokens.refreshToken)
+      localStorage.setItem('token', response.data.tokens.accessToken)
+      localStorage.setItem('refreshToken', response.data.tokens.refreshToken)
       
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: {
-          user: response.user,
-          token: response.tokens.accessToken
+          user: response.data.user,
+          token: response.data.tokens.accessToken
         }
       })
       
-      toast.success(`Bem-vindo(a), ${response.user.name}!`)
+      toast.success(`Bem-vindo(a), ${response.data.user.name}!`)
       return response
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Erro ao fazer login'

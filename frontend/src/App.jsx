@@ -8,9 +8,13 @@ import Layout from './components/common/Layout'
 
 // Páginas de autenticação
 import Login from './pages/auth/Login'
+import Register from './pages/auth/Register'
 
 // Páginas do sistema
 import Dashboard from './pages/dashboard/Dashboard'
+
+// Páginas administrativas
+import Users from './pages/admin/Users'
 
 // Componentes
 import ProtectedRoute from './components/auth/ProtectedRoute'
@@ -65,10 +69,14 @@ function App() {
 
   return (
     <Routes>
-      {/* Rota pública - Login */}
+      {/* Rotas públicas - Autenticação */}
       <Route 
         path="/login" 
         element={<Login />} 
+      />
+      <Route 
+        path="/register" 
+        element={<Register />} 
       />
 
       {/* Rotas protegidas */}
@@ -106,7 +114,12 @@ function App() {
               </div>
             </ProtectedRoute>
           } 
-        />
+        >
+          {/* Gestão de usuários */}
+          <Route path="users" element={<Users />} />
+          <Route path="users/:id" element={<div className="p-6"><h1 className="text-2xl font-bold">Detalhes do Usuário</h1><p>Em desenvolvimento...</p></div>} />
+          <Route path="users/:id/edit" element={<div className="p-6"><h1 className="text-2xl font-bold">Editar Usuário</h1><p>Em desenvolvimento...</p></div>} />
+        </Route>
       </Route>
 
       {/* Páginas de erro */}

@@ -4,12 +4,12 @@ Este diretório contém scripts e configurações para o banco de dados do siste
 
 ## 📁 Arquivos Incluídos
 
-### `setup_test_db.sql`
-Script SQL completo para configurar o banco de dados com:
-- Criação de todas as tabelas
-- Inserção de dados de teste
-- Configuração de usuário da aplicação
-- Views e funções úteis
+### `schema.sql`
+Script SQL limpo que cria apenas as tabelas necessárias:
+- Criação de todas as tabelas do sistema
+- Índices para performance
+- Triggers para updated_at
+- Sem dados mockados
 
 ### `config.test.env`
 Arquivo de configuração específico para ambiente de teste.
@@ -35,28 +35,23 @@ Arquivo de configuração específico para ambiente de teste.
 3. **Executar o Script SQL**
    - Selecione o banco `igreja_admin` no painel esquerdo
    - Clique no ícone "Query Tool" (ou Ctrl+Shift+Q)
-   - Abra o arquivo `setup_test_db.sql`
+   - Abra o arquivo `schema.sql`
    - Execute o script (F5 ou botão "Execute")
 
-## 📊 Dados de Teste Incluídos
+## 📊 Estrutura das Tabelas
 
-### 👥 Usuários Criados
-| Email | Senha | Role | Descrição |
-|-------|-------|------|-----------|
-| admin@igreja.com | 123456 | admin | Administrador Principal |
-| maria@igreja.com | 123456 | secretary | Secretária Maria |
-| pastor@igreja.com | 123456 | admin | Pastor João |
+### 🗄️ Tabelas Criadas
+- **users** - Usuários do sistema (admins e secretários)
+- **members** - Membros da igreja
+- **transactions** - Transações financeiras
+- **access_requests** - Solicitações de acesso ao sistema
 
-### 👨‍👩‍👧‍👦 Membros Criados
-- **6 membros** com dados completos
-- **3 membros ativos**
-- **2 visitantes**
-- **1 membro inativo**
-
-### 💰 Transações Financeiras
-- **11 transações** (6 receitas, 5 despesas)
-- **Saldo inicial:** R$ 4.620,00
-- Dados dos últimos 2 meses
+### 📋 Campos Principais
+- **UUID** como chave primária
+- **Soft delete** implementado (deleted_at)
+- **Timestamps** automáticos (created_at, updated_at)
+- **Índices** para performance
+- **Triggers** para updated_at automático
 
 ## 🔧 Configuração da Aplicação
 
@@ -93,53 +88,85 @@ cp config.test.env .env
 - Transações financeiras
 - Campos: id, type, category, amount, date, payment_method, etc.
 
-## 🔍 Views Úteis
+### `access_requests`
+- Solicitações de acesso ao sistema
+- Campos: id, name, email, password, role, status, approved_by, etc.
 
-### `monthly_financial_summary`
-Resumo financeiro mensal por tipo de transação.
+## 🔍 Funcionalidades Implementadas
 
-### `member_statistics`
-Estatísticas de membros por status.
+### 📊 Estrutura das Tabelas
+- **UUID** como chave primária para todas as tabelas
+- **Soft delete** implementado com campo `deleted_at`
+- **Timestamps** automáticos (`created_at`, `updated_at`)
+- **Índices** otimizados para performance
+- **Triggers** para atualização automática de `updated_at`
 
-### `member_details`
-Membros com informações calculadas (idade, anos de membro).
-
-## ⚙️ Funções Personalizadas
-
-### `calculate_age(birth_date)`
-Calcula a idade baseada na data de nascimento.
-
-### `calculate_membership_years(member_since)`
-Calcula os anos de membro.
-
-### `get_financial_balance(start_date, end_date)`
-Retorna o saldo financeiro em um período.
+### 🔒 Segurança
+- **Validação de dados** com CHECK constraints
+- **Referências** entre tabelas com FOREIGN KEY
+- **Índices únicos** para campos críticos (email)
+- **Soft delete** para preservar histórico
 
 ## 🧪 Testando a Configuração
 
 ### 1. Verificar Conexão
 ```sql
-\c igreja_admin_test
+\c igreja_admin
 ```
 
-### 2. Verificar Dados
+### 2. Verificar Tabelas
 ```sql
--- Verificar usuários
-SELECT name, email, role FROM users WHERE deleted_at IS NULL;
+-- Verificar se todas as tabelas foram criadas
+SELECT table_name FROM information_schema.tables 
+WHERE table_schema = 'public' 
+ORDER BY table_name;
 
--- Verificar membros
-SELECT full_name, status FROM members WHERE deleted_at IS NULL;
-
--- Verificar saldo
-SELECT * FROM get_financial_balance();
+-- Verificar estrutura das tabelas
+\d users;
+\d members;
+\d transactions;
+\d access_requests;
 ```
 
-### 3. Testar Login na API
+### 3. Testar Solicitação de Acesso
 ```bash
-curl -X POST http://localhost:3001/api/auth/login \
+curl -X POST http://localhost:3001/api/access-requests \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@igreja.com","password":"123456"}'
+  -d '{
+    "name": "Novo Usuário",
+    "email": "novo@igreja.com",
+    "password": "123456",
+    "role": "secretary"
+  }'
 ```
+
+### 4. Verificar Tabelas Criadas
+```sql
+-- Verificar se todas as tabelas foram criadas
+SELECT table_name FROM information_schema.tables 
+WHERE table_schema = 'public' 
+ORDER BY table_name;
+```
+
+## 📝 Funcionalidade de Solicitações de Acesso
+
+### Como Funciona
+1. **Solicitação**: Usuários podem solicitar acesso através do frontend
+2. **Armazenamento**: Solicitações são salvas na tabela `access_requests`
+3. **Aprovação**: Administradores podem aprovar/rejeitar solicitações
+4. **Criação de Usuário**: Solicitações aprovadas criam usuários automaticamente
+
+### Status das Solicitações
+- **pending**: Aguardando aprovação
+- **approved**: Aprovada e usuário criado
+- **rejected**: Rejeitada com motivo
+
+### Campos Importantes
+- `email`: Deve ser único (não pode ter solicitação pendente)
+- `password`: Armazenada com hash bcrypt
+- `role`: Função solicitada (admin/secretary)
+- `approved_by`: ID do usuário que aprovou
+- `ip_address`: IP de onde veio a solicitação
 
 ## 🔒 Segurança
 
@@ -155,10 +182,9 @@ curl -X POST http://localhost:3001/api/auth/login \
 
 ## 🗑️ Limpeza (Opcional)
 
-Para remover o banco de teste:
+Para remover o banco de dados:
 ```sql
-DROP DATABASE igreja_admin_test;
-DROP USER igreja_app_user;
+DROP DATABASE igreja_admin;
 ```
 
 ## 📞 Solução de Problemas
@@ -174,7 +200,7 @@ DROP USER igreja_app_user;
 
 ### Erro de Arquivo
 - Confirme se está no diretório correto
-- Verifique se o arquivo `setup_test_db.sql` existe
+- Verifique se o arquivo `schema.sql` existe
 
 ---
 

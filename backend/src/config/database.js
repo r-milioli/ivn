@@ -13,7 +13,6 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: process.env.DB_DIALECT,
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {
       max: 5,
       min: 0,
@@ -41,7 +40,6 @@ const sequelize = new Sequelize(
 const testConnection = async () => {
   try {
     await sequelize.authenticate();
-    console.log('✅ Conexão com banco de dados estabelecida com sucesso!');
   } catch (error) {
     console.error('❌ Erro ao conectar com banco de dados:', error.message);
     process.exit(1);

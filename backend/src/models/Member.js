@@ -15,6 +15,7 @@ const Member = sequelize.define('Member', {
   fullName: {
     type: DataTypes.STRING(150),
     allowNull: false,
+    field: 'full_name', // Mapear para snake_case no banco
     validate: {
       notEmpty: {
         msg: 'Nome completo é obrigatório'
@@ -51,6 +52,7 @@ const Member = sequelize.define('Member', {
   birthDate: {
     type: DataTypes.DATEONLY,
     allowNull: true,
+    field: 'birth_date', // Mapear para snake_case no banco
     validate: {
       isDate: {
         msg: 'Data de nascimento deve ser uma data válida'
@@ -64,6 +66,7 @@ const Member = sequelize.define('Member', {
   baptismDate: {
     type: DataTypes.DATEONLY,
     allowNull: true,
+    field: 'baptism_date', // Mapear para snake_case no banco
     validate: {
       isDate: {
         msg: 'Data de batismo deve ser uma data válida'
@@ -84,6 +87,7 @@ const Member = sequelize.define('Member', {
   memberSince: {
     type: DataTypes.DATEONLY,
     allowNull: true,
+    field: 'member_since', // Mapear para snake_case no banco
     validate: {
       isDate: {
         msg: 'Data de membro deve ser uma data válida'
@@ -98,22 +102,26 @@ const Member = sequelize.define('Member', {
   familyMembers: {
     type: DataTypes.JSON,
     allowNull: true,
+    field: 'family_members', // Mapear para snake_case no banco
     comment: 'Lista de membros da família'
   },
   emergencyContact: {
     type: DataTypes.JSON,
     allowNull: true,
+    field: 'emergency_contact', // Mapear para snake_case no banco
     comment: 'Contato de emergência com nome e telefone'
   },
   // Campos para estatísticas
   attendanceCount: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
+    field: 'attendance_count' // Mapear para snake_case no banco
   },
   lastAttendance: {
     type: DataTypes.DATE,
-    allowNull: true
+    allowNull: true,
+    field: 'last_attendance' // Mapear para snake_case no banco
   }
 }, {
   tableName: 'members',
@@ -123,13 +131,13 @@ const Member = sequelize.define('Member', {
       fields: ['status']
     },
     {
-      fields: ['fullName']
+      fields: ['full_name']
     },
     {
       fields: ['email']
     },
     {
-      fields: ['memberSince']
+      fields: ['member_since']
     }
   ],
   scopes: {

@@ -6,6 +6,7 @@ const authRoutes = require('./authRoutes');
 const memberRoutes = require('./memberRoutes');
 const financeRoutes = require('./financeRoutes');
 const dashboardRoutes = require('./dashboardRoutes');
+const accessRequestRoutes = require('./accessRequestRoutes');
 
 /**
  * Centralizador de rotas da API
@@ -14,6 +15,9 @@ const dashboardRoutes = require('./dashboardRoutes');
 
 // Rotas de autenticação
 router.use('/auth', authRoutes);
+
+// Rotas de solicitações de acesso
+router.use('/access-requests', accessRequestRoutes);
 
 // Rotas de membros
 router.use('/members', memberRoutes);
@@ -44,6 +48,7 @@ router.get('/info', (req, res) => {
     description: 'API REST para sistema de administração de igreja com controle financeiro e gestão de membros',
     endpoints: {
       auth: '/api/auth',
+      accessRequests: '/api/access-requests',
       members: '/api/members',
       finances: '/api/finances',
       dashboard: '/api/dashboard'
@@ -65,6 +70,7 @@ router.use('*', (req, res) => {
       'GET /api/info',
       'POST /api/auth/login',
       'POST /api/auth/refresh',
+      'POST /api/access-requests',
       'GET /api/members',
       'GET /api/finances',
       'GET /api/dashboard'
