@@ -59,6 +59,25 @@ class AccessRequestService {
   }
 
   /**
+   * Atualiza uma solicitação de acesso
+   * @param {string} id - ID da solicitação
+   * @param {Object} updateData - Dados para atualizar
+   * @returns {Promise<Object>} Solicitação atualizada
+   */
+  async updateRequest(id, updateData) {
+    try {
+      const response = await api.put(`/access-requests/${id}`, updateData)
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message
+      }
+    } catch (error) {
+      throw error
+    }
+  }
+
+  /**
    * Rejeita uma solicitação de acesso
    * @param {string} id - ID da solicitação
    * @param {string} reason - Motivo da rejeição

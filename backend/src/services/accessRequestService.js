@@ -105,7 +105,20 @@ const listAccessRequests = async (options = {}) => {
     `;
     
     const dataQuery = `
-      SELECT * 
+      SELECT 
+        id,
+        name,
+        email,
+        role,
+        status,
+        rejection_reason as "rejectionReason",
+        approved_by as "approvedBy",
+        approved_at as "approvedAt",
+        ip_address as "ipAddress",
+        user_agent as "userAgent",
+        created_at as "createdAt",
+        updated_at as "updatedAt",
+        deleted_at as "deletedAt"
       FROM access_requests 
       ${whereClause}
       ORDER BY created_at DESC 
@@ -365,6 +378,57 @@ const getRequestStatistics = async () => {
 };
 
 /**
+ * Atualiza uma solicitação de acesso
+ * @param {string} requestId - ID da solicitação
+ * @param {Object} updateData - Dados para atualizar
+ * @param {Object} updater - Usuário que está atualizando
+ * @returns {Object} Solicitação atualizada
+ */
+const updateAccessRequest = async (requestId, updateData, updater) => {
+  try {
+    const request = await AccessRequest.findByPk(requestId);
+    
+    if (!request) {
+      throw new Error('Solicitação não encontrada');
+    }
+
+    if (request.status !== 'pending') {
+      throw new Error('Apenas solicitações pendentes podem ser editadas');
+    }
+
+    // Atualizar apenas campos permitidos
+    const allowedFields = ['name', 'email', 'role'];
+    const filteredData = {};
+    
+    for (const field of allowedFields) {
+      if (updateData[field] !== undefined) {
+        filteredData[field] = updateData[field];
+      }
+    }
+
+    await request.update(filteredData);
+
+    authLog('info', 'Solicitação de acesso atualizada', {
+      requestId: request.id,
+      email: request.email,
+      name: request.name,
+      updatedFields: Object.keys(filteredData),
+      updatedBy: updater.id,
+      updatedByEmail: updater.email
+    });
+
+    return request.toJSON();
+  } catch (error) {
+    authLog('error', 'Erro ao atualizar solicitação de acesso', {
+      requestId,
+      updatedBy: updater.id,
+      error: error.message
+    });
+    throw error;
+  }
+};
+
+/**
  * Remove uma solicitação (soft delete)
  * @param {string} requestId - ID da solicitação
  * @param {Object} remover - Usuário que está removendo
@@ -405,6 +469,7 @@ module.exports = {
   getAccessRequestById,
   approveAccessRequest,
   rejectAccessRequest,
+  updateAccessRequest,
   hasPendingRequest,
   getRequestStatistics,
   deleteAccessRequest

@@ -28,6 +28,7 @@ router.use(authenticateToken);
 router.get('/', requireAdmin, validateQueryParams, accessRequestController.listRequests);
 router.get('/statistics', requireAdmin, accessRequestController.getStatistics);
 router.get('/:id', requireAdmin, validateUUID('id'), accessRequestController.getRequestById);
+router.put('/:id', requireAdmin, validateUUID('id'), accessRequestController.updateRequest);
 router.post('/:id/approve', requireAdmin, validateUUID('id'), accessRequestController.approveRequest);
 router.post('/:id/reject', requireAdmin, validateUUID('id'), accessRequestController.rejectRequest);
 router.delete('/:id', requireAdmin, validateUUID('id'), accessRequestController.deleteRequest);

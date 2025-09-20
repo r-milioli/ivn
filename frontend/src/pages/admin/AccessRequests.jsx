@@ -3,6 +3,7 @@ import {
   CheckCircle, 
   XCircle, 
   Eye, 
+  Edit,
   Trash2,
   Search,
   Filter,
@@ -23,8 +24,9 @@ const AccessRequests = () => {
   const [actionLoading, setActionLoading] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [showModal, setShowModal] = useState(false)
-  const [modalType, setModalType] = useState('view') // 'view', 'approve', 'reject'
+  const [modalType, setModalType] = useState('view') // 'view', 'edit', 'approve', 'reject'
   const [rejectReason, setRejectReason] = useState('')
+  const [editData, setEditData] = useState({})
   const [statistics, setStatistics] = useState({})
   const [filters, setFilters] = useState({
     status: '',
@@ -126,12 +128,38 @@ const AccessRequests = () => {
     setSelectedRequest(request)
     setModalType(type)
     setShowModal(true)
+    if (type === 'reject') {
+      setRejectReason('')
+    } else if (type === 'edit') {
+      setEditData({
+        name: request.name,
+        email: request.email,
+        role: request.role
+      })
+    }
   }
 
   const closeModal = () => {
     setShowModal(false)
     setSelectedRequest(null)
     setRejectReason('')
+    setEditData({})
+  }
+
+  const handleUpdate = async () => {
+    if (!selectedRequest) return
+
+    try {
+      setActionLoading(true)
+      await accessRequestService.updateRequest(selectedRequest.id, editData)
+      notifySuccess('Solicitação atualizada com sucesso!')
+      closeModal()
+      loadRequests()
+    } catch (error) {
+      notifyError(error.response?.data?.message || 'Erro ao atualizar solicitação')
+    } finally {
+      setActionLoading(false)
+    }
   }
 
   const getStatusBadge = (status) => {
@@ -180,13 +208,24 @@ const AccessRequests = () => {
   }
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    if (!dateString) return 'Data não disponível';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Data inválida';
+      }
+      
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Data inválida';
+    }
   }
 
   return (
@@ -371,6 +410,14 @@ const AccessRequests = () => {
                         {request.status === 'pending' && (
                           <>
                             <button
+                              onClick={() => openModal(request, 'edit')}
+                              className="text-blue-600 hover:text-blue-900 p-1"
+                              title="Editar"
+                              disabled={actionLoading}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </button>
+                            <button
                               onClick={() => openModal(request, 'approve')}
                               className="text-green-600 hover:text-green-900 p-1"
                               title="Aprovar"
@@ -501,6 +548,59 @@ const AccessRequests = () => {
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
               >
                 Fechar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {modalType === 'edit' && selectedRequest && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-gray-900">Editar Solicitação</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Nome</label>
+                <input
+                  type="text"
+                  value={editData.name || ''}
+                  onChange={(e) => setEditData({...editData, name: e.target.value})}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                  type="email"
+                  value={editData.email || ''}
+                  onChange={(e) => setEditData({...editData, email: e.target.value})}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Role</label>
+                <select
+                  value={editData.role || ''}
+                  onChange={(e) => setEditData({...editData, role: e.target.value})}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="secretary">Secretário</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closeModal}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                disabled={actionLoading}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleUpdate}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50"
+                disabled={actionLoading}
+              >
+                {actionLoading ? 'Salvando...' : 'Salvar'}
               </button>
             </div>
           </div>

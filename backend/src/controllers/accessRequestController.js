@@ -91,6 +91,20 @@ const rejectRequest = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Atualiza uma solicitação de acesso (apenas para admins)
+ * PUT /api/access-requests/:id
+ */
+const updateRequest = asyncHandler(async (req, res) => {
+  const requestId = req.params.id;
+  const updateData = req.body;
+  const updater = req.user;
+
+  const updatedRequest = await accessRequestService.updateAccessRequest(requestId, updateData, updater);
+
+  sendSuccessResponse(res, updatedRequest, 'Solicitação atualizada com sucesso');
+});
+
+/**
  * Verifica se email tem solicitação pendente (público)
  * GET /api/access-requests/check-email/:email
  */
@@ -134,6 +148,7 @@ module.exports = {
   getRequestById,
   approveRequest,
   rejectRequest,
+  updateRequest,
   checkEmailRequest,
   getStatistics,
   deleteRequest
